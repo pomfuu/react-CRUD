@@ -30,7 +30,7 @@ const SideBar = ({ activePath }) => {
                 style={{ backgroundColor: "#1A47BC" }}
             >
                 <div className="m-5">
-                    <Link className="font2 text-decoration-none fs-3 fw-semibold text-white" to={"/dashboard"}>
+                    <Link className="font2 text-decoration-none fs-3 fw-semibold text-white">
                         KOSU ADMIN
                     </Link>
                     <nav className="nav mt-5 flex-column">
