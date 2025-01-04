@@ -1,31 +1,46 @@
 import React, { useEffect, useState } from "react";
-import app from "../firebaseConfig";
-import { getDatabase, ref, get } from "firebase/database";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
 function Read() {
   const navigate = useNavigate();
   const [productArray, setProductArray] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const fetchData = async () => {
-      const db = getDatabase(app);
-      const dbRef = ref(db, "product");
       try {
-        const snapshot = await get(dbRef);
-        if (snapshot.exists()) {
-          setProductArray(Object.values(snapshot.val()));
-        } else {
-          alert("No products yet");
-        }
+        setLoading(true);
+        const querySnapshot = await getDocs(collection(db, "Products"));
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setProductArray(data);
       } catch (error) {
+        console.error("Error fetching data: ", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(productArray.length / itemsPerPage);
+  const displayedProducts = productArray.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <div style={{ marginLeft: "20%", marginTop: "2%", maxWidth: "75%" }}>
@@ -48,65 +63,82 @@ function Read() {
       </button>
       {loading ? (
         <p>Loading products...</p>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#1A47BC", color: "#fff" }}>
-              <th style={tableHeaderStyle}>Image</th>
-              <th style={tableHeaderStyle}>Name</th>
-              <th style={tableHeaderStyle}>Category</th>
-              <th style={tableHeaderStyle}>Color</th>
-              <th style={tableHeaderStyle}>Condition</th>
-              <th style={tableHeaderStyle}>Description</th>
-              <th style={tableHeaderStyle}>Dimension</th>
-              <th style={tableHeaderStyle}>Material</th>
-              <th style={tableHeaderStyle}>Notes</th>
-              <th style={tableHeaderStyle}>Price</th>
-              <th style={tableHeaderStyle}>Wishlist</th>
-              <th style={tableHeaderStyle}>Rating</th>
-              <th style={tableHeaderStyle}>Size</th>
-              <th style={tableHeaderStyle}>Size Chart</th>
-              <th style={tableHeaderStyle}>Stock</th>
-              <th style={tableHeaderStyle}>Variant</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productArray.map((product, index) => (
-              <tr
-                key={index}
+      ) : displayedProducts.length > 0 ? (
+        <>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#1A47BC", color: "#FBFAF5" }}>
+                <th style={tableHeaderStyle}>Image</th>
+                <th style={tableHeaderStyle}>Name</th>
+                <th style={tableHeaderStyle}>Category</th>
+                <th style={tableHeaderStyle}>Stock</th>
+                <th style={tableHeaderStyle}>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedProducts.map((product) => (
+                <tr key={product.id} style={{ textAlign: "left" }}>
+                  <td style={tableCellStyle}>
+                    <img
+                      src={product.imageURL}
+                      alt={product.name}
+                      style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                    />
+                  </td>
+                  <td style={tableCellStyle}>{product.name}</td>
+                  <td style={tableCellStyle}>{product.category}</td>
+                  <td style={tableCellStyle}>{product.stock}</td>
+                  <td style={tableCellStyle}>
+                    <button
+                      onClick={() => navigate(`/product/${product.id}`)}
+                      style={{
+                        padding: "10px 20px",
+                        backgroundColor: "#1A47BC",
+                        color: "#FBFAF5",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: "20px" }}>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={paginationButtonStyle}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
                 style={{
-                  textAlign: "left",
-                  borderBottom: "1px solid #ddd",
+                  ...paginationButtonStyle,
+                  backgroundColor: currentPage === i + 1 ? "#1A47BC" : "#FBFAF5",
+                  color: currentPage === i + 1 ? "#FBFAF5" : "#1A47BC",
                 }}
               >
-                <td style={tableCellStyle}>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                  />
-                </td>
-                <td style={tableCellStyle}>{product.name}</td>
-                <td style={tableCellStyle}>{product.category}</td>
-                <td style={tableCellStyle}>{product.color.join(", ")}</td>
-                <td style={tableCellStyle}>{product.condition}</td>
-                <td style={tableCellStyle}>{product.description}</td>
-                <td style={tableCellStyle}>{product.dimension}</td>
-                <td style={tableCellStyle}>{product.material}</td>
-                <td style={tableCellStyle}>{product.notes}</td>
-                <td style={tableCellStyle}>Rp{product.price}</td>
-                <td style={tableCellStyle}>
-                  {product.isWishlist ? "Yes" : "No"}
-                </td>
-                <td style={tableCellStyle}>{product.rating} / 5</td>
-                <td style={tableCellStyle}>{product.size.join(", ")}</td>
-                <td style={tableCellStyle}>{product.sizeChart}</td>
-                <td style={tableCellStyle}>{product.stock}</td>
-                <td style={tableCellStyle}>{product.variant.join(", ")}</td>
-              </tr>
+                {i + 1}
+              </button>
             ))}
-          </tbody>
-        </table>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={paginationButtonStyle}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      ) : (
+        <p>You have no products yet!</p>
       )}
     </div>
   );
@@ -120,6 +152,15 @@ const tableHeaderStyle = {
 const tableCellStyle = {
   padding: "10px",
   textAlign: "left",
+};
+
+const paginationButtonStyle = {
+  padding: "10px 15px",
+  border: "1px solid #1A47BC",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontSize: "14px",
+  margin: "0 5px",
 };
 
 export default Read;

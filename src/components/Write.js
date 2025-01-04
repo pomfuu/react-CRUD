@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import app from "../firebaseConfig";
-import { getDatabase, ref, set, push } from "firebase/database";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 import ".././index.css";
 
 function Write() {
@@ -10,7 +10,7 @@ function Write() {
   const [condition, setCondition] = useState("");
   const [description, setDescription] = useState("");
   const [dimension, setDimension] = useState("");
-  const [image, setImage] = useState("");
+  const [imageURL, setImageURL] = useState("");
   const [material, setMaterial] = useState("");
   const [notes, setNotes] = useState("");
   const [price, setPrice] = useState("");
@@ -20,57 +20,58 @@ function Write() {
   const [variant, setVariant] = useState([]);
 
   const saveData = async () => {
-    if (!name || !category || !price) {
-      alert("Please fill in all required fields, including a valid price.");
+    if (!name || !category || !price || !variant || !category || !color || !size || !variant) {
+      alert("All Data Must be Fulfilled");
       return;
     }
 
     const parsedPrice = parseFloat(price);
     if (isNaN(parsedPrice)) {
-      alert("Price must be a valid number.");
+      alert("Price must be a number");
       return;
     }
 
-    const db = getDatabase(app);
-    const newDocRef = push(ref(db, "product"));
-    set(newDocRef, {
-      name,
-      category,
-      color,
-      condition,
-      description,
-      dimension,
-      image,
-      material,
-      notes,
-      price: parsedPrice,
-      isWishlist: false,
-      rating: 0,
-      size,
-      sizeChart,
-      stock: parseInt(stock),
-      variant,
-    })
-      .then(() => {
-        alert("Data saved successfully");
-        setName("");
-        setCategory("");
-        setColor([]);
-        setCondition("");
-        setDescription("");
-        setDimension("");
-        setImage("");
-        setMaterial("");
-        setNotes("");
-        setPrice("");
-        setSize([]);
-        setSizeChart("");
-        setStock(0);
-        setVariant([]);
-      })
-      .catch((error) => {
-        alert(error.message);
+    try {
+      await addDoc(collection(db, "Products"), {
+        name,
+        category,
+        color,
+        condition,
+        description,
+        dimension,
+        imageURL,
+        material,
+        notes,
+        price: parsedPrice,
+        isWishlist: false,
+        rating: 0,
+        size,
+        sizeChart,
+        stock: parseInt(stock),
+        variant,
       });
+      alert("Product Created!");
+      resetForm();
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+  const resetForm = () => {
+    setName("");
+    setCategory("");
+    setColor([]);
+    setCondition("");
+    setDescription("");
+    setDimension("");
+    setImageURL("");
+    setMaterial("");
+    setNotes("");
+    setPrice("");
+    setSize([]);
+    setSizeChart("");
+    setStock(0);
+    setVariant([]);
   };
 
   const inputStyle = {
@@ -93,7 +94,7 @@ function Write() {
 
   return (
     <div style={{ marginLeft: "20%", marginTop: "2%", maxWidth: "60%" }}>
-      <h2 style={{ marginBottom: "20px", color:'#1A47BC' }}>Add Product</h2>
+      <h2 style={{ marginBottom: "20px", color: "#1A47BC" }}>Add Product</h2>
       <div
         style={{
           display: "flex",
@@ -106,7 +107,19 @@ function Write() {
       >
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
           <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-          <input type="text" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle} />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{ ...inputStyle, cursor: "pointer" }}
+          >
+            <option value="">Select Category</option>
+            <option value="Costume Set">Costume Set</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Bags">Bags</option>
+            <option value="Shoes">Shoes</option>
+            <option value="Properties">Properties</option>
+            <option value="Other">Other</option>
+          </select>
           <input
             type="text"
             placeholder="Color (comma separated)"
@@ -124,7 +137,7 @@ function Write() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
           <input type="text" placeholder="Condition" value={condition} onChange={(e) => setCondition(e.target.value)} style={inputStyle} />
           <input type="text" placeholder="Dimension" value={dimension} onChange={(e) => setDimension(e.target.value)} style={inputStyle} />
-          <input type="text" placeholder="Image URL" value={image} onChange={(e) => setImage(e.target.value)} style={inputStyle} />
+          <input type="text" placeholder="Image URL" value={imageURL} onChange={(e) => setImageURL(e.target.value)} style={inputStyle} />
           <input type="text" placeholder="Material" value={material} onChange={(e) => setMaterial(e.target.value)} style={inputStyle} />
         </div>
         <textarea

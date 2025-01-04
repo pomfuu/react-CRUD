@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Afacad:ital,wght@0,400..700;1,400..700&display=swap');
 
 .content {
-    background-color: #f8f9fa; /* Light background color */
+    background-color: #FBFAF5;
     padding: 20px;
-    flex-grow: 1; /* Ensures the content area expands to fill available space */
+    flex-grow: 1;
   }
 
 .font2{

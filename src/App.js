@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Write from './components/Write';
 import SideBar from './components/Sidebar';
 import Read from './components/Read';
+import ProductDetail from './components/ProductDetail';
+import EditProduct from './components/EditProduct';
 
 function App() {
   const location = useLocation();
@@ -14,6 +16,8 @@ function App() {
         <Route path="/" element={<Write />} />
         <Route path="/product/create" element={<Write />} />
         <Route path="/product" element={<Read />} />
+        <Route path="/product/:productID" element={<ProductDetail />} />
+        <Route path="/product/edit/:productID" element={<EditProduct />} />
       </Routes>
     </div>
   );

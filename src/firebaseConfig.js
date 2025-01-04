@@ -6,7 +6,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 const firebaseConfig = {
   apiKey: "AIzaSyDF3187eOCbR99ZJFvRi4w92GFiFA0Gcbs",
   authDomain: "teskosudulu.firebaseapp.com",
-  databaseURL: "https://teskosudulu-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  // databaseURL: "https://teskosudulu-default-rtdb.asia-southeast1.firebasedatabase.app/",
   projectId: "teskosudulu",
   storageBucket: "teskosudulu.appspot.com",
   messagingSenderId: "328107246588",
