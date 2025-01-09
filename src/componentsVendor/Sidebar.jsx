@@ -1,26 +1,29 @@
-/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import ".././index.css";
 
-const SideBar = ({ activePath }) => {
+const SideBar = ({ activePath, role = "vendor" }) => {
     const [showSidebar, setShowSidebar] = useState(false);
-    const menu = [
-        { name: "Product", value: "/product" },
-        { name: "Order", value: "/order" },
-        { name: "Profile", value: "/profile" },
-    ];
-
+    const menus = {
+        vendor: [
+            { name: "Product", value: "/product" },
+            { name: "Order", value: "/order" },
+            { name: "Profile", value: "/profile" },
+            { name: "Logout", value: "/login" },
+        ],
+        admin: [
+            { name: "Role and Banner", value: "/admin/role-and-banner" },
+            { name: "Logout", value: "/login" },
+        ],
+    };
+    const menu = menus[role] || [];
     const toggleSidebar = () => {
         setShowSidebar(!showSidebar);
     };
 
     return (
         <>
-            <p
-                className="d-lg-none"
-                onClick={toggleSidebar}
-            >
+            <p className="d-lg-none" onClick={toggleSidebar}>
                 {showSidebar ? "Close Sidebar" : "☰"}
             </p>
             <div
@@ -31,7 +34,7 @@ const SideBar = ({ activePath }) => {
             >
                 <div className="m-5">
                     <Link className="font2 text-decoration-none fs-3 fw-semibold text-white">
-                        KOSU ADMIN
+                        {role === "admin" ? "KOSU ADMIN" : "KOSU VENDOR"}
                     </Link>
                     <nav className="nav mt-5 flex-column">
                         {menu.map((item, index) => (
