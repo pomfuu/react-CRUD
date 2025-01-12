@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../UserContext";
 
 function Read() {
   const navigate = useNavigate();
+  const { user } = useContext(UserContext); // Get logged-in user info
   const [productArray, setProductArray] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,10 +17,12 @@ function Read() {
       try {
         setLoading(true);
         const querySnapshot = await getDocs(collection(db, "Products"));
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = querySnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((product) => product.vendor === user?.name);
         setProductArray(data);
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -27,8 +31,10 @@ function Read() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const totalPages = Math.ceil(productArray.length / itemsPerPage);
   const displayedProducts = productArray.slice(

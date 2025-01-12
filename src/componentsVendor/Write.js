@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { useLocation } from "react-router-dom";
 import ".././index.css";
 
 function Write() {
+  const location = useLocation();
+  const [vendor, setVendor] = useState(location.state?.vendor || localStorage.getItem("vendor") || "Unknown Vendor");
+
+  useEffect(() => {
+    console.log("Current vendor:", vendor); 
+  }, [vendor]); 
+
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [color, setColor] = useState([]);
@@ -19,8 +27,17 @@ function Write() {
   const [stock, setStock] = useState(0);
   const [variant, setVariant] = useState([]);
 
+  useEffect(() => {
+    if (vendor === "Unknown Vendor") {
+      const storedVendor = localStorage.getItem("vendor");
+      if (storedVendor) {
+        setVendor(storedVendor);
+      }
+    }
+  }, [vendor]);
+
   const saveData = async () => {
-    if (!name || !category || !price || !variant || !category || !color || !size || !variant) {
+    if (!name || !category || !price || !color || !size || !variant) {
       alert("All Data Must be Fulfilled");
       return;
     }
@@ -49,6 +66,7 @@ function Write() {
         sizeChart,
         stock: parseInt(stock),
         variant,
+        vendor,
       });
       alert("Product Created!");
       resetForm();
@@ -175,7 +193,7 @@ function Write() {
           placeholder="Price"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          style={{ ...inputStyle, borderColor: isNaN(parseFloat(price)) ? "FAFBF5" : "#FAFBF5" }}
+          style={{ ...inputStyle, borderColor: isNaN(parseFloat(price)) ? "red" : "#FAFBF5" }}
         />
         <button onClick={saveData} style={buttonStyle}>
           Save Data

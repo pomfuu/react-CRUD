@@ -8,7 +8,6 @@ const SideBar = ({ activePath, role = "vendor" }) => {
         vendor: [
             { name: "Product", value: "/product" },
             { name: "Order", value: "/order" },
-            { name: "Profile", value: "/profile" },
             { name: "Logout", value: "/login" },
         ],
         admin: [

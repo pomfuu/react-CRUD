@@ -1,29 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { db } from '../firebaseConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { UserContext } from "../UserContext";
 
 function Orders() {
   const [orders, setOrders] = useState([]);
+  const { user } = useContext(UserContext);
   const [editingOrderIndex, setEditingOrderIndex] = useState(null);
   const [editedStatus, setEditedStatus] = useState("");
+  const loggedInVendor = user.name; 
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'Orders'));
-        const orderData = querySnapshot.docs.map((doc) => ({
+        const allOrders = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setOrders(orderData);
+
+        const filteredOrders = allOrders.filter((order) =>
+          order.sellerID && order.sellerID.includes(loggedInVendor)
+        );
+
+        setOrders(filteredOrders);
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [loggedInVendor]);
 
   const handleEditOrder = (index) => {
     setEditingOrderIndex(index);

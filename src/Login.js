@@ -1,34 +1,39 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import icon from '../src/Assets/login.png';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
 import { db } from './firebaseConfig'; 
 import { collection, getDocs } from 'firebase/firestore';
+import { UserContext } from './UserContext';
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const { setUser } = useContext(UserContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const querySnapshot = await getDocs(collection(db, 'Users')); 
-      const users = querySnapshot.docs.map((doc) => doc.data());  
+      const querySnapshot = await getDocs(collection(db, "Users"));
+      const users = querySnapshot.docs.map((doc) => doc.data());
 
       const user = users.find((user) => user.name === email);
 
       if (user) {
-        if (user.role === 'vendor') {
-          navigate('/product'); 
-        } else if (user.role === 'admin') {
-          navigate('/admin/role-and-banner'); 
+        setUser(user); 
+        if (user.role === "vendor") {
+          localStorage.setItem("vendor", user.name); 
+          navigate("/product", { state: { vendor: user.name } });
+          console.log(user.name)
+        } else if (user.role === "admin") {
+          navigate("/admin/role-and-banner");
         } else {
-          setErrorMessage('Unauthorized role');
+          setErrorMessage("Unauthorized role");
         }
       } else {
-        setErrorMessage('Invalid email or password');
+        setErrorMessage("Invalid email or password");
       }
     } catch (error) {
       console.error("Error logging in:", error);
